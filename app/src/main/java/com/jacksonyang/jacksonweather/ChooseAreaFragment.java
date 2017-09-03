@@ -2,6 +2,7 @@ package com.jacksonyang.jacksonweather;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -18,11 +19,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.utils.Utils;
+import com.jacksonyang.jacksonweather.Activity.ShowWeather;
 import com.jacksonyang.jacksonweather.Web.HttpUtil;
 import com.jacksonyang.jacksonweather.Web.JsonCommand;
 import com.jacksonyang.jacksonweather.database.City;
 import com.jacksonyang.jacksonweather.database.County;
 import com.jacksonyang.jacksonweather.database.Province;
+import com.jacksonyang.jacksonweather.gson.Weather;
 
 import org.litepal.crud.DataSupport;
 
@@ -167,6 +170,12 @@ public class ChooseAreaFragment extends Fragment {
                 else if(currentLevel==LEVEL_CITY){
                     chooseCity=cityList.get(position);
                     queryCounties();
+                }else if(currentLevel==LEVEL_COUNTY){
+                    String weatherId=countyList.get(position).getWeatherId();
+                    Intent intent=new Intent(getActivity(), ShowWeather.class);
+                    intent.putExtra("weather_id",weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });

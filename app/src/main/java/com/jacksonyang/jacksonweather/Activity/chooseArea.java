@@ -1,7 +1,10 @@
 package com.jacksonyang.jacksonweather.Activity;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -20,6 +23,14 @@ public class chooseArea extends AppCompatActivity {
         final NetworkInfo networkInfo=connectivityManager.getActiveNetworkInfo();
         if(networkInfo==null){
             Toast.makeText(chooseArea.this,"没有网络连接",Toast.LENGTH_SHORT).show();
+        }
+
+        //进行缓存判断
+        SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
+        if(preferences.getString("weather",null)!=null){
+            Intent intent=new Intent(this,ShowWeather.class);
+            startActivity(intent);
+            finish();
         }
     }
 }

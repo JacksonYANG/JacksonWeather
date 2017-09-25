@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.utils.Utils;
 import com.jacksonyang.jacksonweather.Activity.ShowWeather;
+import com.jacksonyang.jacksonweather.Activity.chooseArea;
 import com.jacksonyang.jacksonweather.Web.HttpUtil;
 import com.jacksonyang.jacksonweather.Web.JsonCommand;
 import com.jacksonyang.jacksonweather.database.City;
@@ -41,7 +42,6 @@ import okhttp3.Response;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link ChooseAreaFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link ChooseAreaFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -69,92 +69,19 @@ public class ChooseAreaFragment extends Fragment {
     private List<County> countyList;//县列表
     private Province chooseProvince;//选中的省份
     private City chooseCity;//选中的城市
-    private County chooseCounty;//选中的县
     private int currentLevel;//当前的级，先选省然后市然后县
-
-    private OnFragmentInteractionListener mListener;
-
-    public ChooseAreaFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ChooseAreaFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ChooseAreaFragment newInstance(String param1, String param2) {
-        ChooseAreaFragment fragment = new ChooseAreaFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view=inflater.inflate(R.layout.activity_choose_area, container, false);
+        View view=inflater.inflate(R.layout.fragment_choose_area, container, false);
         Title=(TextView) view.findViewById(R.id.title);
         Back=(Button) view.findViewById(R.id.back);
         chooseArea=(ListView) view.findViewById(R.id.choose);
         adapter=new ArrayAdapter<String>(getContext(),android.R.layout.simple_list_item_1,data);
         chooseArea.setAdapter(adapter);
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
     }
 
     @Override
@@ -172,13 +99,22 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 }else if(currentLevel==LEVEL_COUNTY){
                     String weatherId=countyList.get(position).getWeatherId();
-                    Intent intent=new Intent(getActivity(), ShowWeather.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if(getActivity() instanceof chooseArea){
+                        Intent intent=new Intent(getActivity(), ShowWeather.class);
+                        intent.putExtra("weather_id",weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if(getActivity() instanceof ShowWeather){
+                        ShowWeather activity=(ShowWeather) getActivity();
+                        activity.drawerHome.closeDrawers();
+                        activity.swipe.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+
                 }
             }
         });
+
         Back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -227,7 +163,7 @@ public class ChooseAreaFragment extends Fragment {
             currentLevel=LEVEL_CITY;
         } else {
             int provinceCode=chooseProvince.getProvinceCode();
-            String address="http://guolin.tech/api/china"+provinceCode;
+            String address="http://guolin.tech/api/china/"+provinceCode;
             queryFromServer(address,"city");
         }
 
@@ -248,7 +184,7 @@ public class ChooseAreaFragment extends Fragment {
         } else {
             int provinceCode=chooseProvince.getProvinceCode();
             int cityCode=chooseCity.getCityCode();
-            String address="http://guolin.tech/api/china"+provinceCode+"/"+cityCode;
+            String address="http://guolin.tech/api/china/"+provinceCode+"/"+cityCode;
             queryFromServer(address,"county");
         }
     }

@@ -28,7 +28,7 @@ public class JsonCommand {
                     JSONObject provinceObject=allProvince.getJSONObject(i);
                     Province province=new Province();
                     province.setProvinceName(provinceObject.getString("name"));
-                    province.setId(provinceObject.getInt("id"));
+                    province.setProvinceCode(provinceObject.getInt("id"));
                     province.save();
                 }
                 return true;
@@ -45,10 +45,10 @@ public class JsonCommand {
             try{
                 JSONArray allCity=new JSONArray(response);
                 for(int i=0;i<allCity.length();i++){
-                    JSONObject JSONcity=allCity.getJSONObject(i);
+                    JSONObject cityObject=allCity.getJSONObject(i);
                     City city=new City();
-                    city.setCityName(JSONcity.getString("name"));
-                    city.setCityCode(JSONcity.getInt("id"));
+                    city.setCityName(cityObject.getString("name"));
+                    city.setCityCode(cityObject.getInt("id"));
                     city.setProvinceId(provinceId);
                     city.save();
                 }

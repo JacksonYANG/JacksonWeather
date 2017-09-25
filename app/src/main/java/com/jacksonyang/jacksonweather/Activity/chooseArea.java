@@ -23,12 +23,13 @@ public class chooseArea extends AppCompatActivity {
         final NetworkInfo networkInfo=connectivityManager.getActiveNetworkInfo();
         if(networkInfo==null){
             Toast.makeText(chooseArea.this,"没有网络连接",Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         //进行缓存判断
         SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
         if(preferences.getString("weather",null)!=null){
-            Intent intent=new Intent(this,ShowWeather.class);
+            Intent intent=new Intent(chooseArea.this,ShowWeather.class);
             startActivity(intent);
             finish();
         }

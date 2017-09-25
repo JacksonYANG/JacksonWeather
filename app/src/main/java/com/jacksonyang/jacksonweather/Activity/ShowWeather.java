@@ -1,12 +1,19 @@
 package com.jacksonyang.jacksonweather.Activity;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -54,21 +61,20 @@ public class ShowWeather extends AppCompatActivity {
     private TextView uvBrief;
     private TextView uvText;
     private LinearLayout forecastLayout;
-    private SharedPreferences sharedPreferences;
+    public SwipeRefreshLayout swipe;
+    public DrawerLayout drawerHome;
+    private Button navButton;
+    private String mWeatherId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_show_weather);
-
-        //设置背景图片
-        bingPicture=(ImageView) findViewById(R.id.bing_picture);
-        String bingpic=sharedPreferences.getString("bing_picture",null);
-        if(bingpic!=null){
-            Glide.with(this).load(bingpic).into(bingPicture);
-        } else{
-            loadBingPicture();
+        if(Build.VERSION.SDK_INT>=21){
+            View decorView=getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
+        setContentView(R.layout.activity_show_weather);
 
         weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
         titleCity = (TextView) findViewById(R.id.title_city);
@@ -92,19 +98,49 @@ public class ShowWeather extends AppCompatActivity {
         travelText=(TextView) findViewById(R.id.travel_text);
         uvBrief=(TextView) findViewById(R.id.uv_brief);
         uvText=(TextView) findViewById(R.id.uv_text);
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        bingPicture=(ImageView) findViewById(R.id.bing_picture);
+        forecastLayout=(LinearLayout) findViewById(R.id.forecast);
+        swipe=(SwipeRefreshLayout) findViewById(R.id.refresh);
+        swipe.setColorSchemeResources(R.color.colorPrimary);
+        drawerHome=(DrawerLayout) findViewById(R.id.drawer_home);
+        navButton=(Button) findViewById(R.id.nav_button);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String weatherString = prefs.getString("weather", null);
 
-        String weatherString = sharedPreferences.getString("weather", null);
+        //设置滑动窗口
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerHome.openDrawer(GravityCompat.START);
+            }
+        });
+
+        //设置背景图片
+        String bingpic=prefs.getString("bing_picture",null);
+        if(bingpic!=null){
+            Glide.with(this).load(bingpic).into(bingPicture);
+        } else{
+            loadBingPicture();
+        }
+
+
         if (weatherString != null) {
             //有缓存到本地
             Weather weather = JsonCommand.handleWeatherResponse(weatherString);
+            mWeatherId=weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {
             //无缓存
-            String weatherId = getIntent().getStringExtra("weather_id");
+            mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(mWeatherId);
         }
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mWeatherId);
+            }
+        });
     }
 
     //本地没有缓存天气数据，从服务器查询天气数据
@@ -118,6 +154,7 @@ public class ShowWeather extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(ShowWeather.this,"获取天气信息失败，请检查网络连接",Toast.LENGTH_SHORT).show();
+                        swipe.setRefreshing(false);
                     }
                 });
             }
@@ -137,6 +174,7 @@ public class ShowWeather extends AppCompatActivity {
                         } else{
                             Toast.makeText(ShowWeather.this,"获取天气信息失败，请检查网络连接",Toast.LENGTH_SHORT).show();
                         }
+                        swipe.setRefreshing(false);
                     }
                 });
             }
@@ -148,7 +186,7 @@ public class ShowWeather extends AppCompatActivity {
     public void showWeatherInfo(Weather weather){
         String cityName=weather.basic.cityName;
         String updateTime=weather.basic.update.updateTime.split(" ")[1];
-        String degree=weather.now.temperature+"C";
+        String degree=weather.now.temperature+"度";
         String weatherInfo=weather.now.nowWeather.info;
         String windDirect=weather.now.wind.direct;
         titleCity.setText(cityName);
@@ -158,12 +196,12 @@ public class ShowWeather extends AppCompatActivity {
         windDirectText.setText(windDirect);
         forecastLayout.removeAllViews();
         for(DailyForcast dailyForcast:weather.forcastList){
-            View view= LayoutInflater.from(this).inflate(R.layout.forecast,forecastLayout,false);
-            TextView dateText=(TextView) findViewById(R.id.date_text);
-            TextView dayWeatherText=(TextView) findViewById(R.id.dayWeather_text);
-            TextView nightWeatherText=(TextView) findViewById(R.id.nightWeather_text);
-            TextView minText=(TextView) findViewById(R.id.min_text);
-            TextView maxText=(TextView) findViewById(R.id.max_text);
+            View view= LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
+            TextView dateText=(TextView) view.findViewById(R.id.date_text);
+            TextView dayWeatherText=(TextView) view.findViewById(R.id.day_weather_text);
+            TextView nightWeatherText=(TextView) view.findViewById(R.id.night_weather_text);
+            TextView minText=(TextView) view.findViewById(R.id.min_text);
+            TextView maxText=(TextView) view.findViewById(R.id.max_text);
             dateText.setText(dailyForcast.date);
             dayWeatherText.setText(dailyForcast.more.dayWeather);
             nightWeatherText.setText(dailyForcast.more.nightWeather);

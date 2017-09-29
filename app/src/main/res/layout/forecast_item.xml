@@ -18,7 +18,8 @@
         android:layout_weight="1"
         android:id="@+id/day_weather_text"
         android:textColor="#fff"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:gravity="left"/>
 
     <TextView
         android:layout_width="0dp"
@@ -26,7 +27,9 @@
         android:layout_weight="1"
         android:id="@+id/night_weather_text"
         android:textColor="#fff"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:gravity="left"
+        android:layout_marginLeft="10dp"/>
 
     <TextView
         android:layout_width="0dp"
@@ -34,15 +37,16 @@
         android:layout_weight="1"
         android:id="@+id/max_text"
         android:layout_gravity="center"
-        android:gravity="right"
-        android:textColor="#fff"/>
+        android:gravity="left"
+        android:textColor="#fff"
+        android:layout_marginLeft="20dp"/>
 
     <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center"
-        android:gravity="right"
+        android:gravity="center"
         android:textColor="#fff"
         android:id="@+id/min_text" />
 

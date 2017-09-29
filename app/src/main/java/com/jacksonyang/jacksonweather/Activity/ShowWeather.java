@@ -1,6 +1,7 @@
 package com.jacksonyang.jacksonweather.Activity;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -26,6 +27,9 @@ import com.jacksonyang.jacksonweather.Web.HttpUtil;
 import com.jacksonyang.jacksonweather.Web.JsonCommand;
 import com.jacksonyang.jacksonweather.gson.DailyForcast;
 import com.jacksonyang.jacksonweather.gson.Weather;
+import com.jacksonyang.jacksonweather.service.AutoUpdate;
+
+import net.youmi.android.nm.sp.SpotManager;
 
 import org.w3c.dom.Text;
 
@@ -184,64 +188,76 @@ public class ShowWeather extends AppCompatActivity {
 
     //处理本地缓存的天气数据并且展示
     public void showWeatherInfo(Weather weather){
-        String cityName=weather.basic.cityName;
-        String updateTime=weather.basic.update.updateTime.split(" ")[1];
-        String degree=weather.now.temperature+"度";
-        String weatherInfo=weather.now.nowWeather.info;
-        String windDirect=weather.now.wind.direct;
-        titleCity.setText(cityName);
-        titleUpdateTime.setText(updateTime);
-        degreeText.setText(degree);
-        weatherInfoText.setText(weatherInfo);
-        windDirectText.setText(windDirect);
-        forecastLayout.removeAllViews();
-        for(DailyForcast dailyForcast:weather.forcastList){
-            View view= LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
-            TextView dateText=(TextView) view.findViewById(R.id.date_text);
-            TextView dayWeatherText=(TextView) view.findViewById(R.id.day_weather_text);
-            TextView nightWeatherText=(TextView) view.findViewById(R.id.night_weather_text);
-            TextView minText=(TextView) view.findViewById(R.id.min_text);
-            TextView maxText=(TextView) view.findViewById(R.id.max_text);
-            dateText.setText(dailyForcast.date);
-            dayWeatherText.setText(dailyForcast.more.dayWeather);
-            nightWeatherText.setText(dailyForcast.more.nightWeather);
-            minText.setText(dailyForcast.temperature.min);
-            maxText.setText(dailyForcast.temperature.max);
-            forecastLayout.addView(view);
+        if(weather!=null&&"ok".equals(weather.status)){
+            String cityName=weather.basic.cityName;
+            String updateTime=weather.basic.update.updateTime.split(" ")[1];
+            String degree=weather.now.temperature+"度";
+            String weatherInfo=weather.now.nowWeather.info;
+            String windDirect=weather.now.wind.direct;
+            titleCity.setText(cityName);
+            titleUpdateTime.setText(updateTime);
+            degreeText.setText(degree);
+            weatherInfoText.setText(weatherInfo);
+            windDirectText.setText(windDirect);
+            forecastLayout.removeAllViews();
+            for(DailyForcast dailyForcast:weather.forcastList){
+                View view= LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
+                TextView dateText=(TextView) view.findViewById(R.id.date_text);
+                TextView dayWeatherText=(TextView) view.findViewById(R.id.day_weather_text);
+                TextView nightWeatherText=(TextView) view.findViewById(R.id.night_weather_text);
+                TextView minText=(TextView) view.findViewById(R.id.min_text);
+                TextView maxText=(TextView) view.findViewById(R.id.max_text);
+                dateText.setText(dailyForcast.date);
+                dayWeatherText.setText(dailyForcast.more.dayWeather);
+                nightWeatherText.setText(dailyForcast.more.nightWeather);
+                minText.setText(dailyForcast.temperature.min);
+                maxText.setText(dailyForcast.temperature.max);
+                forecastLayout.addView(view);
+            }
+            if(weather.aqi!=null){
+                pm25Text.setText(weather.aqi.city.pm25);
+                qualityText.setText(weather.aqi.city.qualitity);
+            }
+            String McomfortBrief=weather.suggestion.comfort.brief;
+            String McomfortText=weather.suggestion.comfort.info;
+            String McarwashBrief=weather.suggestion.carWash.brief;
+            String McarwashText=weather.suggestion.carWash.info;
+            String MdressBrief=weather.suggestion.dress.brief;
+            String MdressText=weather.suggestion.dress.info;
+            String MfluBrief=weather.suggestion.flu.brief;
+            String MfluText=weather.suggestion.flu.info;
+            String MsportBrief=weather.suggestion.sport.brief;
+            String MsportText=weather.suggestion.sport.info;
+            String MtravelBrief=weather.suggestion.travel.brief;
+            String MtravelText=weather.suggestion.travel.info;
+            String MuvBrief=weather.suggestion.ultraViolate.brief;
+            String MuvText=weather.suggestion.ultraViolate.info;
+            comfortBrief.setText(McomfortBrief);
+            comfortText.setText(McomfortText);
+            carwashBrief.setText(McarwashBrief);
+            carwashText.setText(McarwashText);
+            dressBrief.setText(MdressBrief);
+            dressText.setText(MdressText);
+            fluBrief.setText(MfluBrief);
+            fluText.setText(MfluText);
+            sportBrief.setText(MsportBrief);
+            sportText.setText(MsportText);
+            travelBrief.setText(MtravelBrief);
+            travelText.setText(MtravelText);
+            uvBrief.setText(MuvBrief);
+            uvText.setText(MuvText);
+            weatherLayout.setVisibility(View.VISIBLE);
+            Intent intent=new Intent(this, AutoUpdate.class);
+            startService(intent);
+        } else{
+            Toast.makeText(ShowWeather.this,"获取天气信息失败",Toast.LENGTH_SHORT).show();
         }
-        if(weather.aqi!=null){
-            pm25Text.setText(weather.aqi.city.pm25);
-            qualityText.setText(weather.aqi.city.qualitity);
-        }
-        String McomfortBrief=weather.suggestion.comfort.brief;
-        String McomfortText=weather.suggestion.comfort.info;
-        String McarwashBrief=weather.suggestion.carWash.brief;
-        String McarwashText=weather.suggestion.carWash.info;
-        String MdressBrief=weather.suggestion.dress.brief;
-        String MdressText=weather.suggestion.dress.info;
-        String MfluBrief=weather.suggestion.flu.brief;
-        String MfluText=weather.suggestion.flu.info;
-        String MsportBrief=weather.suggestion.sport.brief;
-        String MsportText=weather.suggestion.sport.info;
-        String MtravelBrief=weather.suggestion.travel.brief;
-        String MtravelText=weather.suggestion.travel.info;
-        String MuvBrief=weather.suggestion.ultraViolate.brief;
-        String MuvText=weather.suggestion.ultraViolate.info;
-        comfortBrief.setText(McomfortBrief);
-        comfortText.setText(McomfortText);
-        carwashBrief.setText(McarwashBrief);
-        carwashText.setText(McarwashText);
-        dressBrief.setText(MdressBrief);
-        dressText.setText(MdressText);
-        fluBrief.setText(MfluBrief);
-        fluText.setText(MfluText);
-        sportBrief.setText(MsportBrief);
-        sportText.setText(MsportText);
-        travelBrief.setText(MtravelBrief);
-        travelText.setText(MtravelText);
-        uvBrief.setText(MuvBrief);
-        uvText.setText(MuvText);
-        weatherLayout.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SpotManager.getInstance(this).onAppExit();
     }
 
     //加载必应图片

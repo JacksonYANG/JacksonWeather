@@ -4,9 +4,19 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
-    <ImageView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/the_bing_picture"/>
+        android:layout_marginBottom="80dp"
+        android:id="@+id/splash_layout"
+        >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/view_divider"/>
+
+    </RelativeLayout>
 
 </RelativeLayout>
